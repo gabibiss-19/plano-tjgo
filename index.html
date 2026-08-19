@@ -348,12 +348,12 @@ let atual = 0;
 const CHAVE = "tjgo:ciclo:19ago:v2";
 
 async function carregar(){
-  try{ const r = await window.storage.get(CHAVE); if(r && r.value) estado = JSON.parse(r.value); }
+  try{ const v = localStorage.getItem(CHAVE); if(v) estado = JSON.parse(v); }
   catch(e){}
   atual = indiceHoje(); render();
 }
 async function salvar(){
-  try{ await window.storage.set(CHAVE, JSON.stringify(estado));
+  try{ localStorage.setItem(CHAVE, JSON.stringify(estado));
     document.getElementById("status").textContent = "Progresso salvo neste dispositivo."; }
   catch(e){ document.getElementById("status").textContent = "Salvamento indisponível — as marcações valem só nesta sessão."; }
 }
