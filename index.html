@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Plano TJ-GO · 19/08 a 01/09</title>
+<style>
+  :root{
+    --papel:#F4F5F1;
+    --ficha:#FFFFFF;
+    --tinta:#1F2A2E;
+    --tinta-fraca:#69787E;
+    --caneta:#2B4C7E;
+    --marca:#F2C744;
+    --marca-suave:#FBF0CC;
+    --fio:#DCDFD8;
+    --oliva:#5C7A4A;
+  }
+  *{box-sizing:border-box;}
+  html{-webkit-text-size-adjust:100%;}
+  body{
+    margin:0; background:var(--papel); color:var(--tinta);
+    font-family:"Inter","Segoe UI",system-ui,sans-serif;
+    font-size:15px; line-height:1.55; padding-bottom:70px;
+  }
+  .wrap{max-width:820px; margin:0 auto; padding:0 16px;}
+
+  header{border-bottom:2px solid var(--tinta); padding:22px 0 16px; margin-bottom:18px;}
+  .eyebrow{
+    font-family:ui-monospace,Menlo,Consolas,monospace; font-size:11px; letter-spacing:2.5px;
+    text-transform:uppercase; color:var(--caneta); margin-bottom:7px;
+  }
+  h1{
+    font-family:Georgia,"Times New Roman",serif; font-weight:600; font-size:27px;
+    margin:0 0 6px; letter-spacing:-.4px; line-height:1.15;
+  }
+  header p{margin:0; color:var(--tinta-fraca); font-size:13.5px;}
+  .placar{display:flex; gap:14px; margin-top:16px; flex-wrap:wrap;}
+  .placar div{flex:1; min-width:104px; border-left:3px solid var(--marca); padding-left:10px;}
+  .placar b{display:block; font-family:Georgia,serif; font-size:20px;}
+  .placar span{font-size:10.5px; letter-spacing:1.4px; text-transform:uppercase; color:var(--tinta-fraca);}
+
+  nav.dias{display:flex; gap:6px; overflow-x:auto; padding:12px 0; -webkit-overflow-scrolling:touch;}
+  nav.dias button{
+    flex:0 0 auto; background:var(--ficha); border:1px solid var(--fio); color:var(--tinta-fraca);
+    border-radius:3px; padding:7px 11px; cursor:pointer; font-family:inherit; font-size:12.5px;
+    text-align:center; line-height:1.3; min-width:58px;
+  }
+  nav.dias button b{display:block; font-size:14px; color:var(--tinta); font-family:Georgia,serif;}
+  nav.dias button.ativo{border-color:var(--caneta); background:var(--marca-suave);}
+  nav.dias button.ativo b{color:var(--caneta);}
+  nav.dias button.completo b::after{content:" ✓"; color:var(--oliva); font-size:11px;}
+  nav.dias button:focus-visible{outline:2px solid var(--caneta); outline-offset:2px;}
+
+  .cabeca-dia{display:flex; align-items:baseline; gap:10px; margin:14px 0 12px; flex-wrap:wrap;}
+  .cabeca-dia h2{font-family:Georgia,serif; font-size:20px; margin:0; font-weight:600;}
+  .cabeca-dia .carga{
+    font-family:ui-monospace,Menlo,monospace; font-size:11.5px; color:var(--caneta);
+    background:var(--marca-suave); padding:2px 8px; border-radius:3px;
+  }
+
+  .bloco{
+    display:flex; background:var(--ficha); border:1px solid var(--fio); border-radius:4px;
+    margin-bottom:10px; overflow:hidden;
+  }
+  .etiqueta{flex:0 0 28px; background:#F0F2EE; display:flex; align-items:center; justify-content:center;}
+  .etiqueta span{
+    writing-mode:vertical-rl; transform:rotate(180deg);
+    font-family:ui-monospace,Menlo,monospace; font-size:9.5px; letter-spacing:2.2px;
+    text-transform:uppercase; color:var(--tinta-fraca); padding:8px 0;
+  }
+  .bloco.t-questoes .etiqueta{background:var(--marca-suave);} .bloco.t-questoes .etiqueta span{color:#8A6B10;}
+  .bloco.t-teoria .etiqueta{background:#E4EBF3;} .bloco.t-teoria .etiqueta span{color:var(--caneta);}
+  .bloco.t-revisao .etiqueta{background:#E8EFE4;} .bloco.t-revisao .etiqueta span{color:var(--oliva);}
+  .bloco.t-redacao .etiqueta{background:#F3E7E4;} .bloco.t-redacao .etiqueta span{color:#8C4B36;}
+  .bloco.feito{background:#FAFBF8;} .bloco.feito h3{text-decoration:line-through; text-decoration-color:var(--fio);}
+
+  .corpo{flex:1; padding:12px 15px;}
+  .linha-topo{display:flex; justify-content:space-between; align-items:baseline; gap:10px;}
+  .hora{font-family:ui-monospace,Menlo,monospace; font-size:12px; color:var(--caneta); letter-spacing:.5px;}
+  .dur{font-size:11px; color:var(--tinta-fraca); font-family:ui-monospace,Menlo,monospace;}
+  .corpo h3{margin:3px 0 2px; font-size:16px; font-family:Georgia,serif; font-weight:600;}
+  .topico{font-size:13.5px; margin:0 0 9px;}
+  .campo{display:flex; gap:8px; font-size:12.8px; margin-bottom:5px; color:var(--tinta-fraca);}
+  .campo b{
+    flex:0 0 60px; font-family:ui-monospace,Menlo,monospace; font-size:10px; letter-spacing:1.2px;
+    text-transform:uppercase; color:#98A29E; padding-top:2px;
+  }
+  .campo span{flex:1;}
+  .feito-linha{margin-top:9px; padding-top:8px; border-top:1px dashed var(--fio);}
+  .feito-linha label{display:flex; align-items:center; gap:8px; font-size:13px; cursor:pointer;}
+  .feito-linha input{width:17px; height:17px; accent-color:var(--oliva);}
+
+  h2.secao{
+    font-family:Georgia,serif; font-size:19px; margin:34px 0 4px; font-weight:600;
+    border-top:2px solid var(--tinta); padding-top:20px;
+  }
+  .sub{color:var(--tinta-fraca); font-size:13px; margin:0 0 14px;}
+  .protocolo{background:var(--ficha); border:1px solid var(--fio); border-radius:4px; padding:14px 16px; margin-bottom:10px;}
+  .protocolo h3{margin:0 0 4px; font-size:15.5px; font-family:Georgia,serif;}
+  .protocolo ol{margin:8px 0 0; padding-left:18px; font-size:13.5px; color:var(--tinta-fraca);}
+  .protocolo ol li{margin-bottom:5px;} .protocolo ol li b{color:var(--tinta); font-weight:600;}
+  .protocolo .regra{
+    font-size:12.5px; color:#8A6B10; background:var(--marca-suave); margin:10px -16px -14px;
+    padding:9px 16px; border-top:1px solid var(--fio);
+  }
+  table.fontes{width:100%; border-collapse:collapse; font-size:13.3px; background:var(--ficha);}
+  table.fontes td{border-bottom:1px solid var(--fio); padding:9px 10px; vertical-align:top;}
+  table.fontes td:first-child{width:34%; font-weight:600;}
+  table.fontes td:last-child{color:var(--tinta-fraca);}
+  .metas{background:var(--ficha); border:1px solid var(--fio); border-radius:4px; padding:2px 15px;}
+  .metas label{display:flex; gap:9px; align-items:flex-start; padding:11px 0; border-bottom:1px solid var(--fio); font-size:13.5px; cursor:pointer;}
+  .metas label:last-child{border-bottom:none;}
+  .metas input{width:17px; height:17px; margin-top:2px; accent-color:var(--oliva); flex-shrink:0;}
+  .metas small{display:block; color:var(--tinta-fraca); font-size:12.3px;}
+  footer{margin-top:30px; display:flex; gap:10px; align-items:center; flex-wrap:wrap;}
+  button.acao{
+    font-family:inherit; font-size:13px; padding:8px 13px; border-radius:3px; cursor:pointer;
+    border:1px solid var(--caneta); background:var(--ficha); color:var(--caneta);
+  }
+  button.acao:hover{background:var(--caneta); color:#fff;}
+  #status{font-size:12px; color:var(--tinta-fraca);}
+  @media (prefers-reduced-motion: reduce){*{transition:none !important;}}
+  @media (max-width:520px){ .campo b{flex:0 0 52px;} h1{font-size:23px;} }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap">
+    <div class="eyebrow">Ciclo pré-edital · 14 dias · 3h por dia</div>
+    <h1>Plano TJ-GO — Analista Judiciário</h1>
+    <p>19 de agosto a 1º de setembro · madrugada fixa, vãos aproveitados, domingo forte</p>
+    <div class="placar">
+      <div><b id="p-blocos">0</b><span>blocos feitos</span></div>
+      <div><b id="p-horas">0h00</b><span>tempo acumulado</span></div>
+      <div><b id="p-hoje">—</b><span>hoje</span></div>
+    </div>
+  </div>
+</header>
+
+<div class="wrap">
+  <nav class="dias" id="nav-dias" aria-label="Dias do plano"></nav>
+  <div class="cabeca-dia">
+    <h2 id="titulo-dia">—</h2>
+    <span class="carga" id="carga-dia"></span>
+  </div>
+  <div id="blocos"></div>
+
+  <h2 class="secao">Como executar cada tipo de bloco</h2>
+  <p class="sub">O plano diz o quê. Isto diz o como — é o que evita a sensação de estar estudando à toa.</p>
+
+  <div class="protocolo">
+    <h3>Bloco de questões (madrugada, 90 min)</h3>
+    <ol>
+      <li><b>0–5 min:</b> abre o TEC no tópico do dia, filtra bancas fortes (FGV, Cebraspe, FCC) e monta um caderno de 30 a 35 questões.</li>
+      <li><b>5–50 min:</b> resolve sem consultar nada. Marca toda questão que acertou na dúvida — ela conta como erro.</li>
+      <li><b>50–75 min:</b> lê o comentário só dos erros e das duvidosas. Para cada um, escreve numa frase <b>por que</b> errou: lei, doutrina, desatenção ou pegadinha de banca.</li>
+      <li><b>75–90 min:</b> cada erro de conteúdo vira cartão no Anki. Erro de desatenção não vira cartão — vira linha no caderno de erros.</li>
+    </ol>
+    <div class="regra">Abaixo de 70% no bloco, o tópico precisa de teoria antes de mais questões. Acima de 85%, sai do ciclo e vira só Anki.</div>
+  </div>
+
+  <div class="protocolo">
+    <h3>Blocos dos vãos (30 a 40 min, fracionáveis)</h3>
+    <ol>
+      <li><b>Anki primeiro:</b> cartões vencidos antes de qualquer coisa nova. 20 min resolvem quase sempre.</li>
+      <li><b>Questões no celular:</b> 15 a 20 questões do tópico da madrugada, em blocos de 10 minutos se for o caso. Fila de banco e espera de reunião contam.</li>
+      <li><b>Lei seca:</b> leitura dirigida no Legislação Destacada, do dispositivo que você viu de manhã.</li>
+    </ol>
+    <div class="regra">Vão fracionado não serve para teoria nova. Serve para repetição — que é exatamente o que a sua fase pede.</div>
+  </div>
+
+  <div class="protocolo">
+    <h3>Bloco de teoria (noites de terça e quinta, 70 min)</h3>
+    <ol>
+      <li><b>0–10 min:</b> revê os erros daquele tópico. A teoria entra pra responder pergunta que você já tem.</li>
+      <li><b>10–40 min:</b> leitura ativa do Estratégia ou do livro, só do recorte do dia. Nada de grifar tudo.</li>
+      <li><b>40–52 min:</b> lei seca do dispositivo, lendo em voz alta o que a doutrina acabou de explicar.</li>
+      <li><b>52–60 min:</b> resumo no Samsung Notes — meia página no máximo, só o que você não sabia.</li>
+      <li><b>60–70 min:</b> 10 questões do tópico, ali mesmo, enquanto está fresco.</li>
+    </ol>
+    <div class="regra">Se o tempo apertar, corte o resumo — nunca as 10 questões finais.</div>
+  </div>
+
+  <div class="protocolo">
+    <h3>Redação (domingo)</h3>
+    <ol>
+      <li><b>Primeira:</b> tema de discursiva de tribunal, 60 min cronometrados. Vai para correção humana — é sua cota mais valiosa.</li>
+      <li><b>Segunda:</b> 60 min, tema diferente, correção por IA.</li>
+      <li><b>Depois:</b> cada apontamento vira uma regra de uma linha no Samsung Notes. É essa lista que você relê antes da próxima, não a redação antiga.</li>
+    </ol>
+    <div class="regra">São 8 correções por semana disponíveis e zero usadas. Duas por semana já muda seu patamar até o edital.</div>
+  </div>
+
+  <h2 class="secao">Onde consultar cada coisa</h2>
+  <p class="sub">Para não perder tempo decidindo material no meio do bloco.</p>
+  <table class="fontes">
+    <tr><td>Questões</td><td>TEC — sempre por tópico, nunca por matéria inteira. Filtro de banca ligado.</td></tr>
+    <tr><td>Teoria de apoio</td><td>Estratégia, só o recorte do dia. Livro quando o tema for estrutural: AFO, Adm. Pública, Constitucional, Administrativo.</td></tr>
+    <tr><td>Lei seca</td><td>Legislação Destacada para leitura dirigida; Legislação 360 para conferir alteração e jurisprudência.</td></tr>
+    <tr><td>Memorização</td><td>Anki. Mapas da Lulu como apoio visual de tema fechado; Concurseiro Fora da Caixa para o que resiste.</td></tr>
+    <tr><td>Resumo</td><td>Samsung Notes, um arquivo por matéria. Só entra o que você errou.</td></tr>
+    <tr><td>Registro de tempo</td><td>Estudei, cronômetro ligado — para comparar o real com este plano no fim das duas semanas.</td></tr>
+    <tr><td>Discursiva</td><td>Sistema de correção: 1 humana e 1 IA por semana, no mínimo.</td></tr>
+  </table>
+
+  <h2 class="secao">Metas fixas destas duas semanas</h2>
+  <div class="metas" id="metas"></div>
+
+  <footer>
+    <button class="acao" id="btn-hoje">Ir para hoje</button>
+    <button class="acao" id="btn-reset">Zerar marcações</button>
+    <span id="status">Progresso salvo neste dispositivo.</span>
+  </footer>
+</div>
+
+<script>
+const anki = () => ({t:"revisao",h:"Vãos",dur:"20 min",tit:"Anki",top:"Cartões vencidos",
+  onde:"Celular", como:"Vencidos antes de cartão novo, sempre. Vale fila, ônibus, intervalo do trabalho."});
+const micro = (top, como) => ({t:"questoes",h:"Vãos",dur:"30 min",tit:"Questões no celular",top:top,
+  onde:"TEC pelo app, mesmo tópico da madrugada.", como:como || "15 a 20 questões, pode ser em três pedaços de 10 min."});
+const leiseca = (top, onde) => ({t:"revisao",h:"Vãos ou pré-noite",dur:"40 min",tit:"Lei seca dirigida",top:top,
+  onde:onde, como:"Leitura do dispositivo que você viu de manhã. Sem grifo novo, sem resumo — só releitura consciente."});
+
+const DIAS = [
+ {d:"19/08", sem:"Quarta", carga:"3h", blocos:[
+   {t:"questoes",h:"05h00",dur:"90 min",tit:"Direito Constitucional",top:"Poder Legislativo — arts. 44 a 75 da CF/1988",
+    onde:"TEC, tópico 05.01.",como:"35 questões. Você tem 82% em 140 questões aqui: volume alto com acerto médio é sinal de detalhe mal fixado."},
+   anki(),
+   micro("Processo legislativo — arts. 59 a 69 (79% no seu histórico)"),
+   leiseca("Arts. 44 a 69 da CF/1988","Legislação Destacada")]},
+
+ {d:"20/08", sem:"Quinta", carga:"3h", blocos:[
+   {t:"questoes",h:"05h00",dur:"90 min",tit:"Direito Administrativo",top:"Atos administrativos — espécies, classificação e fases de constituição",
+    onde:"TEC, tópico 03.05.",como:"35 questões. 81% em 106 questões: é o ponto mais fraco da sua matéria mais forte."},
+   anki(),
+   {t:"teoria",h:"Noite",dur:"70 min",tit:"Direito Administrativo",top:"Atos: atributos, elementos, espécies e formas de extinção",
+    onde:"Livro de Administrativo + Lei 9.784/1999 no Legislação Destacada.",
+    como:"Protocolo de teoria. Foco na tabela de espécies e na diferença entre anulação, revogação e cassação."}]},
+
+ {d:"21/08", sem:"Sexta", carga:"3h", blocos:[
+   {t:"questoes",h:"05h00",dur:"90 min",tit:"Língua Portuguesa",top:"Regência nominal e verbal",
+    onde:"TEC, tópico 08.01.",como:"35 questões. 82% em 49 questões — volume baixo demais para o peso que regência tem em prova de tribunal."},
+   anki(),
+   {t:"revisao",h:"Noite",dur:"70 min",tit:"Bloco leve — Constituição de Goiás",top:"CE-GO, arts. 1º a 20",
+    onde:"Legislação Destacada ou PDF da CE-GO.",
+    como:"Leitura dirigida + 15 questões no fim. Sexta cansada rende releitura, não teoria nova."}]},
+
+ {d:"22/08", sem:"Sábado", carga:"3h", blocos:[
+   {t:"questoes",h:"05h00",dur:"90 min",tit:"Informática",top:"Redes de computadores e protocolos",
+    onde:"TEC, tópicos 05 e 05.03.",como:"35 questões. 68 a 70% — junto com a CE-GO, seu pior desempenho real."},
+   anki(),
+   micro("Windows 11 e pacote Office (79 a 82%)"),
+   {t:"revisao",h:"Livre",dur:"40 min",tit:"Encaixe",top:"O que ficou pendente da semana",
+    onde:"Fila de tempo extra.",como:"Se a semana veio inteira, este bloco é folga. Descanso programado também é plano."}]},
+
+ {d:"23/08", sem:"Domingo", carga:"5h — dia forte", blocos:[
+   {t:"questoes",h:"Manhã",dur:"90 min",tit:"Simulado",top:"60 questões mescladas: Administrativo, Constitucional, Português e Informática",
+    onde:"TEC, caderno misto, cronômetro do Estudei.",como:"Sem consulta, sem pausa. Corrigir só no fim, anotando o motivo de cada erro."},
+   {t:"teoria",h:"Manhã",dur:"60 min",tit:"AFO",top:"Ciclo orçamentário: PPA, LDO e LOA",
+    onde:"Livro de AFO + arts. 165 a 169 da CF.",como:"Tema estrutural pede livro. 520 questões é volume baixo para o peso que AFO tem em tribunal."},
+   {t:"redacao",h:"Tarde",dur:"120 min",tit:"Redação",top:"Duas produções: uma para correção humana, uma para IA",
+    onde:"Sistema de correção.",como:"60 min cada, temas diferentes, cronometrado."},
+   {t:"revisao",h:"Noite",dur:"30 min",tit:"Caderno de erros",top:"Refazer os erros da semana",
+    onde:"TEC, caderno de erros.",como:"Sem olhar o comentário antes. O que errar de novo vira cartão prioritário."}]},
+
+ {d:"24/08", sem:"Segunda", carga:"3h", blocos:[
+   {t:"questoes",h:"05h00",dur:"90 min",tit:"Administração",top:"Governança corporativa e pública, Decreto 9.203/2017",
+    onde:"TEC, tópicos 04.01 a 04.03.",como:"35 questões. 76% em 71 questões — destoa dos seus 89% na matéria."},
+   anki(),
+   micro("Gestão da qualidade e ferramentas (78%)"),
+   leiseca("Decreto 9.203/2017 na íntegra","Legislação 360")]},
+
+ {d:"25/08", sem:"Terça", carga:"3h", blocos:[
+   {t:"questoes",h:"05h00",dur:"90 min",tit:"Direito Constitucional",top:"Precatórios (art. 100) e competências do Judiciário (art. 96)",
+    onde:"TEC, tópicos 05.03.01.09 e 05.03.01.05.",como:"35 questões. 76 a 78% em tema que cai muito em concurso de tribunal."},
+   anki(),
+   {t:"teoria",h:"Noite",dur:"70 min",tit:"Direito Constitucional",top:"Poder Judiciário: estrutura, garantias e competências do STF e do STJ",
+    onde:"Livro de Constitucional + arts. 92 a 105 da CF.",
+    como:"Monte uma tabela sua de competências originárias e recursais — ela vira seu material de revisão até a prova."}]},
+
+ {d:"26/08", sem:"Quarta", carga:"3h", blocos:[
+   {t:"questoes",h:"05h00",dur:"90 min",tit:"Direito Administrativo",top:"Lei 14.133/2021 — alteração dos contratos e instrumentos auxiliares",
+    onde:"TEC, tópicos 13.04.07 e 13.03.10.",como:"35 questões. 73 a 79%. Nova lei de licitações é aposta certa em qualquer banca."},
+   anki(),
+   micro("Improbidade — procedimento e processo, arts. 14 a 18-A da Lei 8.429 (81%)"),
+   leiseca("Arts. 124 a 136 da Lei 14.133/2021","Legislação Destacada")]},
+
+ {d:"27/08", sem:"Quinta", carga:"3h", blocos:[
+   {t:"questoes",h:"05h00",dur:"90 min",tit:"Arquivologia",top:"Gestão de documentos e teoria das três idades",
+    onde:"TEC, disciplina Arquivologia.",como:"35 questões. 74% em 43 questões — pouco treino num tema que é praxe em tribunal."},
+   anki(),
+   {t:"teoria",h:"Noite",dur:"70 min",tit:"Arquivologia",top:"Ciclo vital, tabela de temporalidade, classificação e protocolo",
+    onde:"Estratégia + Mapas da Lulu.",como:"Arquivologia é decoreba organizada: mapa visual e Anki resolvem mais que leitura longa."}]},
+
+ {d:"28/08", sem:"Sexta", carga:"3h", blocos:[
+   {t:"questoes",h:"05h00",dur:"90 min",tit:"Língua Portuguesa",top:"Pronomes relativos e adjunto adnominal x complemento nominal",
+    onde:"TEC, tópicos 03.02.04.06 e 06.02.04.",como:"35 questões. 77% nos dois — são os clássicos que decidem prova de português."},
+   anki(),
+   {t:"revisao",h:"Noite",dur:"70 min",tit:"Bloco leve — Constituição de Goiás",top:"CE-GO, arts. 21 a 40",
+    onde:"Legislação Destacada.",como:"Mesma leitura dirigida da sexta anterior. Constância aqui é o que tira você dos 68%."}]},
+
+ {d:"29/08", sem:"Sábado", carga:"3h", blocos:[
+   {t:"questoes",h:"05h00",dur:"90 min",tit:"Adm. de Recursos Materiais",top:"Gestão de almoxarifado e armazenagem",
+    onde:"TEC, tópicos 04 e 04.03.",como:"35 questões. 71% — matéria de peso pequeno, mas de correção rápida e barata."},
+   anki(),
+   micro("Arquivologia — o que você errou na quinta"),
+   {t:"revisao",h:"Livre",dur:"40 min",tit:"Encaixe",top:"O que ficou pendente da semana",
+    onde:"Fila de tempo extra.",como:"Sem meta rígida."}]},
+
+ {d:"30/08", sem:"Domingo", carga:"5h — dia forte", blocos:[
+   {t:"questoes",h:"Manhã",dur:"90 min",tit:"Simulado",top:"60 questões mescladas, agora com AFO e Arquivologia",
+    onde:"TEC, caderno misto, cronometrado.",como:"Compare o percentual com o simulado do dia 23. É o primeiro dado de evolução do ciclo."},
+   {t:"teoria",h:"Manhã",dur:"60 min",tit:"AFO",top:"Receita e despesa pública: estágios e classificações",
+    onde:"Livro de AFO + Lei 4.320/1964.",como:"Protocolo de teoria."},
+   {t:"redacao",h:"Tarde",dur:"120 min",tit:"Redação",top:"Duas produções: humana e IA",
+    onde:"Sistema de correção.",como:"Antes de escrever, releia a lista de regras que saiu da correção do dia 23."},
+   {t:"revisao",h:"Noite",dur:"30 min",tit:"Caderno de erros",top:"Refazer os erros da semana",
+    onde:"TEC.",como:"Sem consultar o comentário antes."}]},
+
+ {d:"31/08", sem:"Segunda", carga:"3h", blocos:[
+   {t:"questoes",h:"05h00",dur:"90 min",tit:"Informática",top:"Computação em nuvem, Windows 11 e Office",
+    onde:"TEC, tópicos 06.08, 03.02.06 e 04.01.",como:"35 questões. 76 a 82%. Informática é a matéria de maior retorno por hora investida."},
+   anki(),
+   micro("Redes e protocolos — o que você errou no dia 22"),
+   leiseca("LGPD, arts. 1º a 6º (82%)","Legislação 360")]},
+
+ {d:"01/09", sem:"Terça", carga:"3h", blocos:[
+   {t:"questoes",h:"05h00",dur:"90 min",tit:"Ética e legislação do tribunal",top:"Ética no serviço público + Regimento Interno do TJ-GO",
+    onde:"TEC (Ética) + PDF do RI do TJ-GO.",como:"35 questões de ética. Hoje é o dia de trocar o RI do TJDFT pelo do TJ-GO no seu plano do Estudei."},
+   anki(),
+   {t:"teoria",h:"Noite",dur:"70 min",tit:"Legislação estadual",top:"Lei de Organização Judiciária de Goiás e estrutura do TJ-GO",
+    onde:"Texto legal + Legislação 360.",como:"Composição do tribunal, órgãos, competências e serventias. Números e prazos viram cartão no Anki."}]}
+];
+
+const METAS = [
+ {id:"m1", t:"Quatro redações enviadas até 01/09", s:"Duas por semana: uma humana, uma IA."},
+ {id:"m2", t:"Anki zerado todo dia", s:"Inclusive segunda e quarta. É o mínimo inegociável."},
+ {id:"m3", t:"Dois simulados feitos e comparados", s:"23/08 e 30/08. O segundo só vale se comparado com o primeiro."},
+ {id:"m4", t:"CE-GO lida por completo", s:"Duas sextas de leitura dirigida cobrem a parte principal."},
+ {id:"m5", t:"Regimento do TJ-GO no lugar do TJDFT no Estudei", s:"Ajuste de plano, cinco minutos."},
+ {id:"m6", t:"Exportação nova do TEC em 01/09", s:"É com ela que recalculamos os pesos do próximo ciclo."}
+];
+
+let estado = {feitos:{}, metas:{}};
+let atual = 0;
+const CHAVE = "tjgo:ciclo:19ago:v2";
+
+async function carregar(){
+  try{ const r = await window.storage.get(CHAVE); if(r && r.value) estado = JSON.parse(r.value); }
+  catch(e){}
+  atual = indiceHoje(); render();
+}
+async function salvar(){
+  try{ await window.storage.set(CHAVE, JSON.stringify(estado));
+    document.getElementById("status").textContent = "Progresso salvo neste dispositivo."; }
+  catch(e){ document.getElementById("status").textContent = "Salvamento indisponível — as marcações valem só nesta sessão."; }
+}
+function indiceHoje(){
+  const h = new Date();
+  const dd = String(h.getDate()).padStart(2,"0") + "/" + String(h.getMonth()+1).padStart(2,"0");
+  const i = DIAS.findIndex(x => x.d === dd);
+  return i >= 0 ? i : 0;
+}
+function diaCompleto(i){ return DIAS[i].blocos.every((b,j) => estado.feitos[i+":"+j]); }
+
+function renderNav(){
+  const nav = document.getElementById("nav-dias");
+  nav.innerHTML = "";
+  DIAS.forEach((dia,i) => {
+    const b = document.createElement("button");
+    b.innerHTML = `<b>${dia.d.slice(0,2)}</b>${dia.sem.slice(0,3)}`;
+    if(i === atual) b.classList.add("ativo");
+    if(diaCompleto(i)) b.classList.add("completo");
+    b.addEventListener("click", () => { atual = i; render(); });
+    nav.appendChild(b);
+  });
+  const a = nav.querySelector(".ativo");
+  if(a) a.scrollIntoView({block:"nearest", inline:"center"});
+}
+
+function renderDia(){
+  const dia = DIAS[atual];
+  document.getElementById("titulo-dia").textContent = dia.sem + ", " + dia.d;
+  document.getElementById("carga-dia").textContent = dia.carga;
+  const alvo = document.getElementById("blocos");
+  alvo.innerHTML = "";
+  dia.blocos.forEach((b,j) => {
+    const k = atual + ":" + j;
+    const div = document.createElement("div");
+    div.className = "bloco t-" + b.t + (estado.feitos[k] ? " feito" : "");
+    const rot = {questoes:"Questões", teoria:"Teoria", revisao:"Revisão", redacao:"Redação"}[b.t];
+    div.innerHTML = `
+      <div class="etiqueta"><span>${rot}</span></div>
+      <div class="corpo">
+        <div class="linha-topo"><span class="hora">${b.h}</span><span class="dur">${b.dur}</span></div>
+        <h3>${b.tit}</h3>
+        <p class="topico">${b.top}</p>
+        <div class="campo"><b>Onde</b><span>${b.onde}</span></div>
+        <div class="campo"><b>Como</b><span>${b.como}</span></div>
+        <div class="feito-linha"><label><input type="checkbox" ${estado.feitos[k] ? "checked" : ""} data-k="${k}"> Concluído</label></div>
+      </div>`;
+    alvo.appendChild(div);
+  });
+  alvo.querySelectorAll("input[data-k]").forEach(inp => {
+    inp.addEventListener("change", e => {
+      estado.feitos[e.target.dataset.k] = e.target.checked;
+      salvar(); renderNav(); renderDia(); placar();
+    });
+  });
+}
+
+function renderMetas(){
+  const alvo = document.getElementById("metas");
+  alvo.innerHTML = "";
+  METAS.forEach(m => {
+    const l = document.createElement("label");
+    l.innerHTML = `<input type="checkbox" ${estado.metas[m.id] ? "checked" : ""}>
+      <span><strong>${m.t}</strong><small>${m.s}</small></span>`;
+    l.querySelector("input").addEventListener("change", e => { estado.metas[m.id] = e.target.checked; salvar(); });
+    alvo.appendChild(l);
+  });
+}
+
+function placar(){
+  let n = 0, min = 0;
+  DIAS.forEach((dia,i) => dia.blocos.forEach((b,j) => {
+    if(estado.feitos[i+":"+j]){ n++; const m = parseInt(b.dur); if(!isNaN(m)) min += m; }
+  }));
+  document.getElementById("p-blocos").textContent = n;
+  document.getElementById("p-horas").textContent = Math.floor(min/60) + "h" + String(min%60).padStart(2,"0");
+  document.getElementById("p-hoje").textContent = DIAS[indiceHoje()].d;
+}
+
+function render(){ renderNav(); renderDia(); renderMetas(); placar(); }
+
+document.getElementById("btn-hoje").addEventListener("click", () => { atual = indiceHoje(); render(); });
+document.getElementById("btn-reset").addEventListener("click", () => { estado = {feitos:{}, metas:{}}; salvar(); render(); });
+
+carregar();
+</script>
+</body>
+</html>
