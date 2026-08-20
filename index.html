@@ -90,6 +90,23 @@
   .feito-linha{margin-top:9px; padding-top:8px; border-top:1px dashed var(--fio);}
   .feito-linha label{display:flex; align-items:center; gap:8px; font-size:13px; cursor:pointer;}
   .feito-linha input{width:17px; height:17px; accent-color:var(--oliva);}
+  .registro{display:flex; gap:8px; flex-wrap:wrap; margin-top:9px; align-items:center;}
+  .registro .cx{display:flex; align-items:center; gap:5px;}
+  .registro label{
+    font-family:ui-monospace,Menlo,monospace; font-size:9.5px; letter-spacing:1.1px;
+    text-transform:uppercase; color:#98A29E;
+  }
+  .registro input[type=number]{
+    width:58px; padding:5px 6px; border:1px solid var(--fio); border-radius:3px;
+    font-family:ui-monospace,Menlo,monospace; font-size:12.5px; background:#FCFDFB; color:var(--tinta);
+  }
+  .registro input[type=text]{
+    flex:1; min-width:150px; padding:6px 8px; border:1px solid var(--fio); border-radius:3px;
+    font-family:inherit; font-size:12.8px; background:#FCFDFB; color:var(--tinta);
+  }
+  .registro input:focus{outline:2px solid var(--marca); outline-offset:-1px; border-color:var(--marca);}
+  .registro .pct-alerta{border-color:#C24534 !important; background:#FBEDEA;}
+  .dica-pct{font-size:11.5px; color:#8C4B36; margin-top:6px;}
 
   h2.secao{
     font-family:Georgia,serif; font-size:19px; margin:34px 0 4px; font-weight:600;
@@ -210,8 +227,12 @@
 
   <footer>
     <button class="acao" id="btn-hoje">Ir para hoje</button>
+    <button class="acao" id="btn-relatorio" style="border-color:#8A6B10; color:#8A6B10;">Gerar relatório</button>
+    <button class="acao" id="btn-backup">Copiar backup</button>
+    <button class="acao" id="btn-restaurar">Restaurar</button>
     <button class="acao" id="btn-reset">Zerar marcações</button>
-    <span id="status">Progresso salvo neste dispositivo.</span>
+    <span id="status">Salvando neste navegador.</span>
+    <textarea id="caixa-backup" rows="3" style="display:none; width:100%; margin-top:10px; font-family:ui-monospace,Menlo,monospace; font-size:12px; padding:8px; border:1px solid var(--fio); border-radius:3px;"></textarea>
   </footer>
 </div>
 
@@ -343,19 +364,105 @@ const METAS = [
  {id:"m6", t:"Exportação nova do TEC em 01/09", s:"É com ela que recalculamos os pesos do próximo ciclo."}
 ];
 
-let estado = {feitos:{}, metas:{}};
+let estado = {feitos:{}, metas:{}, dados:{}};
+
+function registroHTML(k, b){
+  const d = (estado.dados && estado.dados[k]) || {};
+  const prev = parseInt(b.dur) || "";
+  const campoPct = b.t === "questoes"
+    ? `<div class="cx"><label for="p-${k}">% acerto</label>
+       <input type="number" id="p-${k}" min="0" max="100" data-campo="pct" data-k="${k}"
+       value="${d.pct != null ? d.pct : ""}" placeholder="--"
+       class="${d.pct != null && d.pct < 70 ? "pct-alerta" : ""}"></div>` : "";
+  const alerta = (b.t === "questoes" && d.pct != null && d.pct < 70)
+    ? `<div class="dica-pct">Abaixo de 70%: esse tópico precisa de teoria antes de mais questões. Anote na nota e eu reencaixo no ciclo.</div>` : "";
+  return `<div class="registro">
+    <div class="cx"><label for="t-${k}">min reais</label>
+      <input type="number" id="t-${k}" min="0" max="600" data-campo="min" data-k="${k}"
+      value="${d.min != null ? d.min : ""}" placeholder="${prev}"></div>
+    ${campoPct}
+    <input type="text" data-campo="nota" data-k="${k}" value="${(d.nota || "").replace(/"/g,"&quot;")}"
+      placeholder="Nota rápida: o que travou, o que caiu diferente...">
+  </div>${alerta}`;
+}
+
+function gerarRelatorio(){
+  const linhas = ["RELATORIO DO CICLO TJ-GO — gerado em " + new Date().toLocaleDateString("pt-BR"), ""];
+  let totMin = 0, blocosFeitos = 0, somaPct = 0, nPct = 0;
+  DIAS.forEach((dia,i) => {
+    const doDia = [];
+    dia.blocos.forEach((b,j) => {
+      const k = i+":"+j;
+      const d = (estado.dados && estado.dados[k]) || {};
+      const feito = !!estado.feitos[k];
+      if(!feito && d.min == null && d.pct == null && !d.nota) return;
+      const min = d.min != null ? d.min : (feito ? (parseInt(b.dur) || 0) : 0);
+      totMin += min; if(feito) blocosFeitos++;
+      if(d.pct != null){ somaPct += d.pct; nPct++; }
+      doDia.push("  - " + b.tit + " | " + b.top
+        + " | " + (feito ? "feito" : "parcial")
+        + " | " + min + " min"
+        + (d.pct != null ? " | " + d.pct + "% acerto" : "")
+        + (d.nota ? " | nota: " + d.nota : ""));
+    });
+    if(doDia.length){ linhas.push(dia.sem + " " + dia.d + ":"); linhas.push(...doDia, ""); }
+  });
+  const metasFeitas = METAS.filter(m => estado.metas[m.id]).map(m => "  - " + m.t);
+  linhas.push("METAS CUMPRIDAS:", ...(metasFeitas.length ? metasFeitas : ["  - nenhuma ainda"]), "");
+  linhas.push("RESUMO: " + blocosFeitos + " blocos | "
+    + Math.floor(totMin/60) + "h" + String(totMin%60).padStart(2,"0") + " reais"
+    + (nPct ? " | media de acerto " + Math.round(somaPct/nPct) + "%" : ""));
+  const cx = document.getElementById("caixa-backup");
+  cx.style.display = "block";
+  cx.value = linhas.join("\n");
+  cx.select();
+  document.getElementById("status").textContent = "Copie esse texto e cole na conversa com o Claude.";
+}
 let atual = 0;
 const CHAVE = "tjgo:ciclo:19ago:v2";
 
-async function carregar(){
-  try{ const v = localStorage.getItem(CHAVE); if(v) estado = JSON.parse(v); }
-  catch(e){}
+function carregar(){
+  try{
+    const bruto = localStorage.getItem(CHAVE);
+    if(bruto){ estado = JSON.parse(bruto); if(!estado.dados) estado.dados = {}; }
+    document.getElementById("status").textContent = "Salvando neste navegador.";
+  }catch(e){
+    document.getElementById("status").textContent = "Este navegador bloqueia o salvamento — use a cópia de segurança.";
+  }
   atual = indiceHoje(); render();
 }
-async function salvar(){
-  try{ localStorage.setItem(CHAVE, JSON.stringify(estado));
-    document.getElementById("status").textContent = "Progresso salvo neste dispositivo."; }
-  catch(e){ document.getElementById("status").textContent = "Salvamento indisponível — as marcações valem só nesta sessão."; }
+function salvar(){
+  try{
+    localStorage.setItem(CHAVE, JSON.stringify(estado));
+    const n = Object.values(estado.feitos).filter(Boolean).length;
+    document.getElementById("status").textContent = "Salvo neste navegador · " + n + " blocos marcados.";
+  }catch(e){
+    document.getElementById("status").textContent = "Não consegui salvar — copie o backup antes de fechar.";
+  }
+}
+function exportar(){
+  const cx = document.getElementById("caixa-backup");
+  cx.style.display = "block";
+  cx.value = JSON.stringify(estado);
+  cx.select();
+  document.getElementById("status").textContent = "Copie esse texto e guarde onde quiser (Samsung Notes serve).";
+}
+function importar(){
+  const cx = document.getElementById("caixa-backup");
+  if(cx.style.display !== "block"){
+    cx.style.display = "block"; cx.value = ""; cx.focus();
+    document.getElementById("status").textContent = "Cole aqui o backup e clique em Restaurar de novo.";
+    return;
+  }
+  try{
+    const novo = JSON.parse(cx.value);
+    if(!novo || typeof novo !== "object" || !novo.feitos) throw new Error("formato");
+    estado = {feitos:novo.feitos || {}, metas:novo.metas || {}, dados:novo.dados || {}};
+    salvar(); render(); cx.style.display = "none";
+    document.getElementById("status").textContent = "Progresso restaurado.";
+  }catch(e){
+    document.getElementById("status").textContent = "Esse texto não é um backup válido — cole o conteúdo inteiro.";
+  }
 }
 function indiceHoje(){
   const h = new Date();
@@ -400,13 +507,31 @@ function renderDia(){
         <div class="campo"><b>Onde</b><span>${b.onde}</span></div>
         <div class="campo"><b>Como</b><span>${b.como}</span></div>
         <div class="feito-linha"><label><input type="checkbox" ${estado.feitos[k] ? "checked" : ""} data-k="${k}"> Concluído</label></div>
+        ${registroHTML(k, b)}
       </div>`;
     alvo.appendChild(div);
   });
-  alvo.querySelectorAll("input[data-k]").forEach(inp => {
+  alvo.querySelectorAll('input[type=checkbox][data-k]').forEach(inp => {
     inp.addEventListener("change", e => {
       estado.feitos[e.target.dataset.k] = e.target.checked;
       salvar(); renderNav(); renderDia(); placar();
+    });
+  });
+  alvo.querySelectorAll("input[data-campo]").forEach(inp => {
+    inp.addEventListener("change", e => {
+      const k = e.target.dataset.k, campo = e.target.dataset.campo;
+      if(!estado.dados) estado.dados = {};
+      if(!estado.dados[k]) estado.dados[k] = {};
+      const v = e.target.value.trim();
+      if(v === ""){ delete estado.dados[k][campo]; }
+      else if(campo === "nota"){ estado.dados[k].nota = v; }
+      else{
+        let n = parseInt(v);
+        if(isNaN(n)) { delete estado.dados[k][campo]; }
+        else { if(campo === "pct") n = Math.max(0, Math.min(100, n)); estado.dados[k][campo] = n; }
+      }
+      salvar(); placar();
+      if(campo === "pct") renderDia();
     });
   });
 }
@@ -426,7 +551,10 @@ function renderMetas(){
 function placar(){
   let n = 0, min = 0;
   DIAS.forEach((dia,i) => dia.blocos.forEach((b,j) => {
-    if(estado.feitos[i+":"+j]){ n++; const m = parseInt(b.dur); if(!isNaN(m)) min += m; }
+    const k = i+":"+j;
+    const d = (estado.dados && estado.dados[k]) || {};
+    if(estado.feitos[k]){ n++; min += (d.min != null ? d.min : (parseInt(b.dur) || 0)); }
+    else if(d.min != null){ min += d.min; }
   }));
   document.getElementById("p-blocos").textContent = n;
   document.getElementById("p-horas").textContent = Math.floor(min/60) + "h" + String(min%60).padStart(2,"0");
@@ -436,7 +564,13 @@ function placar(){
 function render(){ renderNav(); renderDia(); renderMetas(); placar(); }
 
 document.getElementById("btn-hoje").addEventListener("click", () => { atual = indiceHoje(); render(); });
-document.getElementById("btn-reset").addEventListener("click", () => { estado = {feitos:{}, metas:{}}; salvar(); render(); });
+document.getElementById("btn-relatorio").addEventListener("click", gerarRelatorio);
+document.getElementById("btn-backup").addEventListener("click", exportar);
+document.getElementById("btn-restaurar").addEventListener("click", importar);
+document.getElementById("btn-reset").addEventListener("click", () => {
+  if(!confirm("Isso apaga todas as marcações do ciclo. Continuar?")) return;
+  estado = {feitos:{}, metas:{}, dados:{}}; salvar(); render();
+});
 
 carregar();
 </script>
